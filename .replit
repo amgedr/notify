@@ -45,7 +45,7 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "go mod tidy && go build -o notify && echo \"To run with Telegram credentials, use: TELEGRAM_BOT_TOKEN='your_token' TELEGRAM_CHAT_ID='your_chat_id' ./notify 'Your message'\" && ./notify --help"
+args = "go mod tidy && go build -o notify && TELEGRAM_BOT_TOKEN=\"5262292072:AAEplVwr53YuS8h_vhA3gR1uo8bdXfkHcSk\" TELEGRAM_CHAT_ID=\"1577929091\" ./notify --test"
 
 [deployment]
 run = ["sh", "-c", "go mod download && go build -o notify -v"]
