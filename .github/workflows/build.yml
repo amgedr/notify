@@ -1,0 +1,56 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.19'
+
+    - name: Install dependencies
+      run: |
+        go mod download
+
+    - name: Run tests
+      run: go test -v ./...
+
+    - name: Build
+      run: |
+        GOOS=linux GOARCH=amd64 go build -o notify -v
+        chmod +x notify
+
+    - name: Test binary
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: |
+        ./notify --test
+
+    - name: Deploy to server
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_HOST: ${{ secrets.SSH_HOST }}
+        SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+      run: |
+        # Setup SSH
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+        
+        # Copy binary to server
+        scp notify $SSH_USERNAME@$SSH_HOST:~/
+        
+        # Make binary executable on server
+        ssh $SSH_USERNAME@$SSH_HOST "chmod +x ~/notify"

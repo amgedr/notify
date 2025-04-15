@@ -1,0 +1,51 @@
+modules = ["go"]
+
+[nix]
+channel = "stable-24_05"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "GoNotifyBuilder"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "build_and_test_notify"
+
+[[workflows.workflow]]
+name = "GoNotifyBuilder"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "go mod download && go build -o notify -v"
+
+[[workflows.workflow]]
+name = "build_and_test_notify"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "go mod tidy && go build -o notify && echo \"To run with Telegram credentials, use: TELEGRAM_BOT_TOKEN='your_token' TELEGRAM_CHAT_ID='your_chat_id' ./notify 'Your message'\" && ./notify --help"
+
+[deployment]
+run = ["sh", "-c", "go mod download && go build -o notify -v"]
