@@ -50,7 +50,7 @@ jobs:
         ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
         
         # Copy binary to server
-        scp notify $SSH_USERNAME@$SSH_HOST:~/
+        scp notify $SSH_USERNAME@$SSH_HOST:~/bin/
         
         # Make binary executable on server
-        ssh $SSH_USERNAME@$SSH_HOST "chmod +x ~/notify"
+        ssh $SSH_USERNAME@$SSH_HOST "chmod +x ~/bin/notify"
